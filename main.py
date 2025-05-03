@@ -26,7 +26,7 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 def root():
     return {"success": True}
 
-@app.post("/upload")
+@app.post("/predict")
 async def upload(file: UploadFile = File(...)):
     try:
         # Create file path
