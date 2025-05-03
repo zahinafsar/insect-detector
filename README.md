@@ -10,4 +10,4 @@ pip install -r requirements.txt
 ### Run the server
 ```bash
 python -m uvicorn main:app --reload
-```# insect-detector
+```
