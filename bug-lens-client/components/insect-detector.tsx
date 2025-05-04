@@ -301,7 +301,7 @@ export default function InsectDetector() {
                       <Upload className="mr-2 size-5" /> Browse Files
                     </Button>
                   </motion.div>
-                  <motion.div
+                  {/* <motion.div
                     className="flex-1"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
@@ -314,7 +314,7 @@ export default function InsectDetector() {
                     >
                       <Camera className="mr-2 size-5" /> Take Photo
                     </Button>
-                  </motion.div>
+                  </motion.div> */}
                 </div>
               </div>
             </Card>
@@ -485,11 +485,11 @@ export default function InsectDetector() {
                         fill
                         className="object-contain"
                       />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                      {/* <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
                         <div className="text-white text-xl font-bold capitalize">
                           {detections[0]?.class.replace("_", " ")}
                         </div>
-                      </div>
+                      </div> */}
                       <div className="absolute top-4 right-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">
                         <div className="flex items-center gap-1">
                           <Sparkles className="size-3" />
@@ -498,7 +498,7 @@ export default function InsectDetector() {
                           </span>
                         </div>
                       </div>
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      {/* <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <Button
                           variant="outline"
                           size="icon"
@@ -510,7 +510,7 @@ export default function InsectDetector() {
                         >
                           <Maximize2 className="size-5" />
                         </Button>
-                      </div>
+                      </div> */}
                     </div>
                   )}
                 </div>
