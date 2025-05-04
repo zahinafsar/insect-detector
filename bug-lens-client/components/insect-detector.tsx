@@ -45,6 +45,33 @@ export default function InsectDetector() {
     console.log("Current app state:", appState);
   }, [appState]);
 
+  const uploadToBackend = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:8000/predict", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && data.image) {
+        // Convert base64 to data URL
+        return `data:image/jpeg;base64,${data.image}`;
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error;
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -68,7 +95,7 @@ export default function InsectDetector() {
         console.log(
           "Camera image converted to file, starting upload simulation"
         );
-        simulateUploadAndProcessing();
+        processSelectedFile(file);
       })
       .catch((error) => {
         console.error("Error processing camera image:", error);
@@ -82,44 +109,48 @@ export default function InsectDetector() {
       });
   };
 
-  const processSelectedFile = (file: File) => {
+  const processSelectedFile = async (file: File) => {
     // Reset state
     setAppState("uploading");
     setUploadProgress(0);
 
-    // Create a URL for the selected image
+    // Create a URL for the selected image preview
     const imageUrl = URL.createObjectURL(file);
     setSelectedImage(imageUrl);
 
-    simulateUploadAndProcessing();
-  };
+    try {
+      // Start upload progress animation
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => (prev >= 90 ? 90 : prev + 10));
+      }, 500);
 
-  const simulateUploadAndProcessing = () => {
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setAppState("processing");
+      // Set processing state
+      setAppState("processing");
 
-          // Simulate processing time
-          setTimeout(() => {
-            // In a real app, this would be the result from your API
-            setResultImage("/placeholder.svg?height=600&width=800");
-            setAppState("result");
+      // Actually upload the file
+      const resultImageUrl = await uploadToBackend(file);
 
-            toast({
-              title: "Insect Identified!",
-              description:
-                "We've identified a Monarch Butterfly in your image.",
-              variant: "success",
-            });
-          }, 3000);
-          return 100;
-        }
-        return prev + 5;
+      // Clear interval and set progress to 100
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      // Update UI with result
+      setResultImage(resultImageUrl);
+      setAppState("result");
+
+      toast({
+        title: "Insect Identified!",
+        description: "Our AI has analyzed your image.",
+        variant: "success",
       });
-    }, 100);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process the image. Please try again.",
+        variant: "destructive",
+      });
+      resetState();
+    }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
