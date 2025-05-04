@@ -41,7 +41,8 @@ def root():
 async def upload(file: UploadFile = File(...)):
     try:
         # Create file path
-        file_path = UPLOAD_DIR / file.filename
+        temp_filename = f"temp_{Path(file.filename)}"
+        file_path = UPLOAD_DIR / temp_filename
         
         # Save the file
         with open(file_path, "wb") as buffer:
@@ -50,7 +51,7 @@ async def upload(file: UploadFile = File(...)):
 
         # Detect image and get the result path
         result = model(file_path, save=True)
-        result_path = Path(result[0].path) # Get the path of the saved image
+        result_path = Path(result[0].save_dir) / f"temp_{Path(file.filename).stem}.jpg" # Use different extension for result
 
         # Read the result image and convert to base64
         with open(result_path, "rb") as image_file:

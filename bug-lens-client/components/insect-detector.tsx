@@ -469,7 +469,7 @@ export default function InsectDetector() {
                         src={resultImage || "/placeholder.svg"}
                         alt="Identified insect"
                         fill
-                        className="object-cover"
+                        className="object-contain"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
                         <div className="text-white text-xl font-bold">
