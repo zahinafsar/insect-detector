@@ -1,6 +1,7 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
+import json
 from pathlib import Path
 import torch
 import functools
@@ -51,18 +52,31 @@ async def upload(file: UploadFile = File(...)):
 
         # Detect image and get the result path
         result = model(file_path, save=True)
-        result_path = Path(result[0].save_dir) / f"temp_{Path(file.filename).stem}.jpg" # Use different extension for result
+        result_path = Path(result[0].save_dir) / f"temp_{Path(file.filename).stem}.jpg"
 
         # Read the result image and convert to base64
         with open(result_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
 
+        # Extract detection results
+        detections = []
+        for r in result:
+            boxes = r.boxes
+            for box in boxes:
+                detection = {
+                    "class": r.names[int(box.cls[0])],
+                    "confidence": float(box.conf[0]),
+                    "bbox": box.xyxy[0].tolist()
+                }
+                detections.append(detection)
+
         # Clean up
         shutil.rmtree(PREDICT_DIR)
         file_path.unlink()
             
-        return { 
+        return {
             "success": True,
+            "detections": detections,
             "image": encoded_string
         }
     except Exception as e:
