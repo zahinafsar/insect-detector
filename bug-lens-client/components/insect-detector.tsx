@@ -28,6 +28,18 @@ import CameraCapture from "./camera-capture";
 
 type AppState = "idle" | "camera" | "uploading" | "processing" | "result";
 
+interface Detection {
+  class: string;
+  confidence: number;
+  bbox: [number, number, number, number];
+}
+
+interface ApiResponse {
+  success: boolean;
+  detections: Detection[];
+  image: string;
+}
+
 export default function InsectDetector() {
   useEffect(() => {
     document.title = "BugLens - AI Insect Identification";
@@ -36,6 +48,7 @@ export default function InsectDetector() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
+  const [detections, setDetections] = useState<Detection[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useMobile();
   const { toast } = useToast();
@@ -59,9 +72,9 @@ export default function InsectDetector() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      if (data.success && data.image) {
-        // Convert base64 to data URL
+      const data: ApiResponse = await response.json();
+      if (data.success) {
+        setDetections(data.detections);
         return `data:image/jpeg;base64,${data.image}`;
       } else {
         throw new Error("Invalid response format");
@@ -178,6 +191,7 @@ export default function InsectDetector() {
     setUploadProgress(0);
     setSelectedImage(null);
     setResultImage(null);
+    setDetections([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -472,17 +486,16 @@ export default function InsectDetector() {
                         className="object-contain"
                       />
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-                        <div className="text-white text-xl font-bold">
-                          Monarch Butterfly
-                        </div>
-                        <div className="text-white text-sm opacity-90 font-medium italic">
-                          Danaus plexippus
+                        <div className="text-white text-xl font-bold capitalize">
+                          {detections[0]?.class.replace("_", " ")}
                         </div>
                       </div>
                       <div className="absolute top-4 right-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-md">
                         <div className="flex items-center gap-1">
                           <Sparkles className="size-3" />
-                          <span>98% Match</span>
+                          <span>
+                            {Math.round(detections[0]?.confidence * 100)}% Match
+                          </span>
                         </div>
                       </div>
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -518,24 +531,6 @@ export default function InsectDetector() {
                     butterflies can travel up to 3,000 miles during their
                     migration.
                   </p>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                    <div className="bg-white/50 dark:bg-black/20 p-2 rounded-lg">
-                      <span className="font-medium text-emerald-800 dark:text-emerald-300">
-                        Habitat:
-                      </span>
-                      <span className="block text-emerald-600 dark:text-emerald-400">
-                        Fields, meadows, gardens
-                      </span>
-                    </div>
-                    <div className="bg-white/50 dark:bg-black/20 p-2 rounded-lg">
-                      <span className="font-medium text-emerald-800 dark:text-emerald-300">
-                        Diet:
-                      </span>
-                      <span className="block text-emerald-600 dark:text-emerald-400">
-                        Milkweed, nectar
-                      </span>
-                    </div>
-                  </div>
                 </motion.div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mt-2 w-full max-w-md">
